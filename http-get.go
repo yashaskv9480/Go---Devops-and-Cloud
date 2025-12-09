@@ -16,42 +16,54 @@ type CatResponse struct { //For json parse
 	Length int    `json:"length"`
 }
 
+type GithubResponse struct {
+	Name  string         `json:"full_name"`
+	Owner map[string]any `json:"owner"`
+}
+
 func Perform_http_call() {
 	// URL := os.Getenv("URL")
-	URL := "https://catfact.ninja/fact"
-
-	// url, err := url.ParseRequestURI(URL)
+	URL := "https://catfact.ninja /fact"
+	GITHUBURL := "https://api.github.com/repos/golang/go"
 
 	if url, err := url.ParseRequestURI(URL); err != nil {
 		fmt.Print("%s is not found or wrong", url)
 		os.Exit(1)
 	}
 
-	response, err := http.Get(URL) //stream response
+	// StringOutput := string(ioOutput)         // Convert to String
 
-	if err != nil || response.StatusCode != 200 {
-		var logInfo any
+	// log.Println("String is ", StringOutput)
 
-		if err != nil {
-			logInfo = err
-		} else {
-			logInfo = response.Body
-		}
-		log.Fatal(logInfo) //exits
-	}
-	fmt.Print("hii")
-	ioOutput, _ := io.ReadAll(response.Body) // Read all to buffer
-	StringOutput := string(ioOutput)         // Convert to String
-
-	log.Println("String is ", StringOutput)
+	githubReponse, err := getResponse(GITHUBURL)
+	urlResponse, err := getResponse(URL)
 
 	var jsonOutput CatResponse
-	err = json.Unmarshal(ioOutput, &jsonOutput) //Convert to Json Object
+	var githubOutput GithubResponse
+
+	err = json.Unmarshal(urlResponse, &jsonOutput) //Convert to Json Object
+	err = json.Unmarshal(githubReponse, &githubOutput)
 
 	if err != nil {
 		log.Fatal(err)
 	}
 
-	fmt.Println("Json Result is ", jsonOutput)
+	fmt.Printf("GITHUB Json Result is %s and %f", githubOutput.Name, githubOutput.Owner["id"])
+	fmt.Printf("JSON result is %v", jsonOutput)
+
+}
+
+func getResponse(URL string) ([]byte, error) {
+	response, err := http.Get(URL)
+	if err != nil {
+		return nil, err
+	}
 	defer response.Body.Close()
+
+	ioOutput, err := io.ReadAll(response.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return ioOutput, nil
 }
