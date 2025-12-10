@@ -3,7 +3,6 @@ package main
 import "io"
 
 func main() {
-	// Perform_http_call()
 	s := StringContents{
 		contents: "hii",
 	}
